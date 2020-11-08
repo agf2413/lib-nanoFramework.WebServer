@@ -511,15 +511,19 @@ namespace nanoFramework.WebServer
                     int incForSlash;
                     string toCompare;
                     string routeStr;
-                    string rawUrl;
+                    string rawUrl = context.Request.RawUrl;
+                    int idxSecondSlash;
+                    int lastIdxRouteSlash;
 
                     foreach (var rt in _callbackRoutes)
                     {
                         route = (CallbackRoutes)rt;
-                        urlParam = context.Request.RawUrl.IndexOf(ParamStart);
-                        isFound = false;
+                        urlParam = rawUrl.IndexOf(ParamStart);
                         routeStr = route.Route;
-                        rawUrl = context.Request.RawUrl;
+                        lastIdxRouteSlash = routeStr.LastIndexOf('/');
+                        lastIdxRouteSlash = lastIdxRouteSlash < 0 ? 1 : lastIdxRouteSlash + 1;
+                        idxSecondSlash = rawUrl.Length > lastIdxRouteSlash ? rawUrl.IndexOf('/', lastIdxRouteSlash + 1) : -1;
+                        isFound = false;
                         incForSlash = routeStr.IndexOf('/') == 0 ? 0 : 1;
                         toCompare = route.CaseSensitive ? rawUrl : rawUrl.ToLower();
                         if (toCompare.IndexOf(routeStr) == incForSlash)
@@ -533,7 +537,7 @@ namespace nanoFramework.WebServer
                             }
                             else
                             {
-                                if (toCompare.Length == routeStr.Length + incForSlash)
+                                if ((idxSecondSlash >= 0 ? idxSecondSlash : toCompare.Length) == routeStr.Length + incForSlash)
                                 {
                                     isFound = true;
                                 }
